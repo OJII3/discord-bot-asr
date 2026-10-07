@@ -4,9 +4,10 @@ Klein の voice chat 機能向けに、Qwen3-ASR の WebSocket ストリーミ�
 
 ## 起動
 
-Linux と NVIDIA GPU、CUDA 対応の vLLM 実行環境が必要です。uv と Python 3.12 を用意して、リポジトリのルートで実行します。
+Linux と NVIDIA GPU が必要です。Nix の開発シェルに含まれる Python 3.12 と C コンパイラを使って、リポジトリのルートで起動します。
 
 ```sh
+nix develop
 uv sync
 uv run qwen3-asr-server
 ```
@@ -19,6 +20,7 @@ uv run qwen3-asr-server
 | --- | --- | --- |
 | `ASR_MODEL` | `Qwen/Qwen3-ASR-0.6B` | Qwen3-ASR モデル ID またはローカルパス |
 | `GPU_MEMORY_UTILIZATION` | `0.55` | vLLM インスタンス用の GPU メモリ枠。RTX 3060 12 GB で SBV2 と共有する場合の初期値 |
+| `MAX_MODEL_LEN` | `8192` | vLLM の最大シーケンス長。12 GB GPU で KV cache を抑える |
 | `HOST` | `0.0.0.0` | bind するアドレス |
 | `PORT` | `8000` | listen するポート |
 | `LOG_LEVEL` | `INFO` | ログレベル |

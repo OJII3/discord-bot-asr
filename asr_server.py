@@ -55,11 +55,13 @@ async def lifespan(_: FastAPI):
     global asr
     model_name = os.getenv("ASR_MODEL", "Qwen/Qwen3-ASR-0.6B")
     gpu_memory_utilization = float(os.getenv("GPU_MEMORY_UTILIZATION", "0.55"))
+    max_model_len = int(os.getenv("MAX_MODEL_LEN", "8192"))
     logger.info("Loading %s", model_name)
     asr = await asyncio.to_thread(
         Qwen3ASRModel.LLM,
         model=model_name,
         gpu_memory_utilization=gpu_memory_utilization,
+        max_model_len=max_model_len,
         max_new_tokens=128,
     )
     logger.info("Model ready")
