@@ -54,7 +54,7 @@ inference_lock = asyncio.Lock()
 async def lifespan(_: FastAPI):
     global asr
     model_name = os.getenv("ASR_MODEL", "Qwen/Qwen3-ASR-0.6B")
-    gpu_memory_utilization = float(os.getenv("GPU_MEMORY_UTILIZATION", "0.8"))
+    gpu_memory_utilization = float(os.getenv("GPU_MEMORY_UTILIZATION", "0.55"))
     logger.info("Loading %s", model_name)
     asr = await asyncio.to_thread(
         Qwen3ASRModel.LLM,

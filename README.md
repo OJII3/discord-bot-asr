@@ -18,9 +18,19 @@ uv run python asr_server.py
 | 環境変数 | 既定値 | 説明 |
 | --- | --- | --- |
 | `ASR_MODEL` | `Qwen/Qwen3-ASR-0.6B` | Qwen3-ASR モデル ID またはローカルパス |
-| `GPU_MEMORY_UTILIZATION` | `0.8` | vLLM の GPU メモリ使用率 |
+| `GPU_MEMORY_UTILIZATION` | `0.55` | vLLM インスタンス用の GPU メモリ枠。RTX 3060 12 GB で SBV2 と共有する場合の初期値 |
 | `HOST` | `0.0.0.0` | bind するアドレス |
 | `PORT` | `8000` | listen するポート |
 | `LOG_LEVEL` | `INFO` | ログレベル |
 
-Klein 側では voice chat を有効にし、`asrServerUrl` にサーバーの WebSocket URL を設定してください。プロトコルの詳細は [Voice chat ASR streaming protocol](https://github.com/OJII3/klein/blob/main/docs%2Fvoice-chat-asr-protocol.md) を参照してください。
+`GPU_MEMORY_UTILIZATION` は vLLM インスタンスごとの制限で、他の GPU プロセスのメモリを管理するものではありません。0.55 は約 6.6 GiB を ASR 用に見込む設定ですが、SBV2 の推論時ピークや CUDA の一時メモリ次第で OOM は起こり得ます。実際の空き容量を `nvidia-smi` で確認し、必要なら値を下げてください。
+
+ユーザー systemd で常時起動・異常終了後の再起動を行う場合は、[`deploy/systemd/qwen3-asr.service.example`](deploy/systemd/qwen3-asr.service.example) を `~/.config/systemd/user/qwen3-asr.service` にコピーし、`/path/to/...` を実際のパスに置き換えてください。
+
+```sh
+systemctl --user daemon-reload
+systemctl --user enable --now qwen3-asr.service
+systemctl --user status qwen3-asr.service
+```
+
+ログアウト中も動かすには、ユーザーの linger を有効にしてください。Klein 側では voice chat を有効にし、`asrServerUrl` にサーバーの WebSocket URL を設定してください。プロトコルの詳細は [Voice chat ASR streaming protocol](https://github.com/OJII3/klein/blob/main/docs%2Fvoice-chat-asr-protocol.md) を参照してください。
