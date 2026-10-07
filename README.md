@@ -27,6 +27,8 @@ uv run qwen3-asr-server
 
 `GPU_MEMORY_UTILIZATION` は vLLM インスタンスごとの制限で、他の GPU プロセスのメモリを管理するものではありません。0.55 は約 6.6 GiB を ASR 用に見込む設定ですが、SBV2 の推論時ピークや CUDA の一時メモリ次第で OOM は起こり得ます。実際の空き容量を `nvidia-smi` で確認し、必要なら値を下げてください。
 
+長い発話はサーバー内部で30秒ごとに処理窓を切り替え、境界の音声を2秒重ねて認識文をつなぎます。クライアントからは1つの utterance のままで、`transcript.partial` は累積文、`transcript.final` は発話全体の文を返します。これにより発話全体の長さで Qwen の入力が増え続けないようにします。`MAX_MODEL_LEN` は各処理窓に対する上限です。
+
 ユーザー systemd で常時起動・異常終了後の再起動を行う場合は、[`deploy/systemd/qwen3-asr.service.example`](deploy/systemd/qwen3-asr.service.example) を `~/.config/systemd/user/qwen3-asr.service` にコピーし、`/path/to/...` を実際のパスに置き換えてください。
 
 ```sh

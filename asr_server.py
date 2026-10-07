@@ -13,6 +13,11 @@ logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
 
 SAMPLE_RATE = 16_000
+STREAM_CHUNK_SECONDS = 2
+WINDOW_SECONDS = 30
+OVERLAP_SECONDS = 2
+WINDOW_SAMPLES = SAMPLE_RATE * WINDOW_SECONDS
+OVERLAP_SAMPLES = SAMPLE_RATE * OVERLAP_SECONDS
 LANGUAGES = {
     "ar": "Arabic",
     "cs": "Czech",
@@ -81,6 +86,21 @@ def valid_object(value: object, keys: set[str]) -> bool:
     return isinstance(value, dict) and set(value) == keys
 
 
+def merge_transcripts(previous: str, current: str, language: str) -> str:
+    if not current:
+        return previous
+    if not previous:
+        return current
+
+    max_overlap = min(len(previous), len(current))
+    for overlap in range(max_overlap, 2, -1):
+        if previous.endswith(current[:overlap]):
+            return previous + current[overlap:]
+
+    separator = "" if language == LANGUAGES["ja"] else " "
+    return previous + separator + current
+
+
 @app.websocket("/v1/stream")
 async def stream(websocket: WebSocket) -> None:
     await websocket.accept()
@@ -89,6 +109,9 @@ async def stream(websocket: WebSocket) -> None:
     state = None
     session_language = LANGUAGES["ja"]
     last_partial_text = ""
+    committed_text = ""
+    segment_samples = 0
+    recent_audio = np.zeros((0,), dtype=np.float32)
 
     try:
         while True:
@@ -104,16 +127,50 @@ async def stream(websocket: WebSocket) -> None:
                     return
 
                 pcm = np.frombuffer(payload, dtype="<i2")
-                async with inference_lock:
-                    await asyncio.to_thread(asr.streaming_transcribe, pcm, state)
-                    text = state.text
-                if text != last_partial_text:
-                    last_partial_text = text
-                    await websocket.send_json({
-                        "type": "transcript.partial",
-                        "utteranceId": utterance_id,
-                        "text": text,
-                    })
+                offset = 0
+                while offset < pcm.shape[0]:
+                    length = min(WINDOW_SAMPLES - segment_samples, pcm.shape[0] - offset)
+                    piece = pcm[offset : offset + length]
+                    offset += length
+
+                    async with inference_lock:
+                        await asyncio.to_thread(asr.streaming_transcribe, piece, state)
+                        segment_text = state.text
+
+                    normalized_piece = piece.astype(np.float32) / 32768.0
+                    recent_audio = np.concatenate((recent_audio, normalized_piece))[-OVERLAP_SAMPLES:]
+                    segment_samples += length
+
+                    text = merge_transcripts(committed_text, segment_text, session_language)
+                    if text != last_partial_text:
+                        last_partial_text = text
+                        await websocket.send_json({
+                            "type": "transcript.partial",
+                            "utteranceId": utterance_id,
+                            "text": text,
+                        })
+
+                    if segment_samples == WINDOW_SAMPLES:
+                        async with inference_lock:
+                            await asyncio.to_thread(asr.finish_streaming_transcribe, state)
+                            committed_text = merge_transcripts(
+                                committed_text, state.text, session_language
+                            )
+                            state = await asyncio.to_thread(
+                                asr.init_streaming_state,
+                                language=session_language,
+                                chunk_size_sec=STREAM_CHUNK_SECONDS,
+                            )
+                            await asyncio.to_thread(asr.streaming_transcribe, recent_audio, state)
+                        segment_samples = recent_audio.shape[0]
+                        text = committed_text
+                        if text != last_partial_text:
+                            last_partial_text = text
+                            await websocket.send_json({
+                                "type": "transcript.partial",
+                                "utteranceId": utterance_id,
+                                "text": text,
+                            })
                 continue
 
             raw_text = frame.get("text")
@@ -168,11 +225,14 @@ async def stream(websocket: WebSocket) -> None:
                     return
                 utterance_id = new_utterance_id
                 last_partial_text = ""
+                committed_text = ""
+                segment_samples = 0
+                recent_audio = np.zeros((0,), dtype=np.float32)
                 async with inference_lock:
                     state = await asyncio.to_thread(
                         asr.init_streaming_state,
                         language=session_language,
-                        chunk_size_sec=2.0,
+                        chunk_size_sec=STREAM_CHUNK_SECONDS,
                     )
                 continue
 
@@ -187,7 +247,7 @@ async def stream(websocket: WebSocket) -> None:
                 completed_utterance_id = utterance_id
                 async with inference_lock:
                     await asyncio.to_thread(asr.finish_streaming_transcribe, state)
-                    text = state.text
+                    text = merge_transcripts(committed_text, state.text, session_language)
                 await websocket.send_json({
                     "type": "transcript.final",
                     "utteranceId": completed_utterance_id,
