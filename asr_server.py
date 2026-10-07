@@ -20,6 +20,7 @@ LANGUAGES = {
     "de": "German",
     "el": "Greek",
     "en": "English",
+    "es": "Spanish",
     "fa": "Persian",
     "fi": "Finnish",
     "fil": "Filipino",
