@@ -207,7 +207,11 @@ async def stream(websocket: WebSocket) -> None:
             pass
 
 
-if __name__ == "__main__":
+def main() -> None:
     import uvicorn
 
     uvicorn.run(app, host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8000")))
+
+
+if __name__ == "__main__":
+    main()

@@ -8,7 +8,7 @@ Linux と NVIDIA GPU、CUDA 対応の vLLM 実行環境が必要です。uv と 
 
 ```sh
 uv sync
-uv run python asr_server.py
+uv run qwen3-asr-server
 ```
 
 初回起動時に Hugging Face からモデルをダウンロードします。既定の接続先は `ws://localhost:8000/v1/stream` です。TLS 終端を設ける場合は `wss://` を使用してください。

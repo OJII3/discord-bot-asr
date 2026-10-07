@@ -9,7 +9,7 @@ Type=simple
 WorkingDirectory=/path/to/discord-bot-asr
 Environment=ASR_MODEL=Qwen/Qwen3-ASR-0.6B
 Environment=GPU_MEMORY_UTILIZATION=0.55
-ExecStart=/path/to/uv run --project /path/to/discord-bot-asr python /path/to/discord-bot-asr/asr_server.py
+ExecStart=/path/to/uv run --project /path/to/discord-bot-asr qwen3-asr-server
 Restart=on-failure
 RestartSec=10
 
