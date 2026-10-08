@@ -1,0 +1,18 @@
+[Unit]
+Description=Qwen3 ASR WebSocket server
+After=default.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/discord-bot-asr
+Environment=ASR_MODEL=Qwen/Qwen3-ASR-0.6B
+Environment=GPU_MEMORY_UTILIZATION=0.55
+Environment=MAX_MODEL_LEN=8192
+ExecStart=/path/to/nix develop /path/to/discord-bot-asr --command uv run --project /path/to/discord-bot-asr qwen3-asr-server
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
