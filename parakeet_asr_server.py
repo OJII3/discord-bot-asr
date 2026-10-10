@@ -14,11 +14,7 @@ logger = logging.getLogger(__name__)
 SAMPLE_RATE = 16_000
 MAX_AUDIO_SECONDS = 30
 MAX_AUDIO_SAMPLES = SAMPLE_RATE * MAX_AUDIO_SECONDS
-SUPPORTED_LANGUAGES = {
-    "bg", "hr", "cs", "da", "nl", "en", "et", "fi", "fr", "de", "el",
-    "hu", "it", "lv", "lt", "mt", "pl", "pt", "ro", "sk", "sl", "es",
-    "sv", "ru", "uk",
-}
+SUPPORTED_LANGUAGES = {"ja"}
 
 asr = None
 inference_lock = asyncio.Lock()
@@ -30,7 +26,7 @@ async def lifespan(_: FastAPI):
     import nemo.collections.asr as nemo_asr
     import torch
 
-    model_name = "nvidia/parakeet-tdt-0.6b-v3"
+    model_name = "nvidia/parakeet-tdt_ctc-0.6b-ja"
     device = os.getenv("ASR_DEVICE", "auto")
     if device == "auto":
         device = "cuda" if torch.cuda.is_available() else "cpu"

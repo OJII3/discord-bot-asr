@@ -35,7 +35,7 @@ ASR_DEVICE=cpu uv run asr-server
 
 ## Parakeet サーバー
 
-既存 faster-whisper サーバーと同じ `/v1/asr` WebSocket プロトコルを使う Parakeet サーバーも起動できます。NVIDIA NeMo の `parakeet-tdt-0.6b-v3` を使用します。Parakeet v3 は英語を含む欧州25言語に対応しますが、日本語には対応していません。Klein の `language` を対応言語（例: `en`）にして試してください。
+既存 faster-whisper サーバーと同じ `/v1/asr` WebSocket プロトコルを使う Parakeet サーバーも起動できます。NVIDIA NeMo の [`parakeet-tdt_ctc-0.6b-ja`](https://huggingface.co/nvidia/parakeet-tdt_ctc-0.6b-ja) を使用し、日本語の音声を認識します。モデルは CC BY 4.0 で公開されています。
 
 ```sh
 nix develop
