@@ -8,11 +8,17 @@ Linux 環境で動作します。Nix の開発シェルに含まれる Python 3.
 
 ```sh
 nix develop
-uv sync
+uv sync --extra cuda
 uv run asr-server
 ```
 
-初回起動時に Hugging Face からモデルをダウンロードします。既定の接続先は `ws://localhost:8000/v1/asr` です。TLS 終端を設ける場合は `wss://` を使用してください。
+NVIDIA GPU を使う場合、`cuda` extra が CUDA 12 用 cuBLAS と cuDNN 9 をインストールし、Nix 開発シェルがそれらのライブラリをロード対象にします。初回起動時に Hugging Face からモデルをダウンロードします。既定の接続先は `ws://localhost:8000/v1/asr` です。TLS 終端を設ける場合は `wss://` を使用してください。
+
+GPU ライブラリを入れず CPU で実行する場合は `uv sync` の後、次のように起動します。
+
+```sh
+ASR_DEVICE=cpu uv run asr-server
+```
 
 ## 設定
 

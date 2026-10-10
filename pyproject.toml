@@ -7,7 +7,13 @@ dependencies = [
     "fastapi>=0.115",
     "numpy>=2.0",
     "faster-whisper>=1.1.0",
-    "uvicorn>=0.34",
+    "uvicorn[standard]>=0.34",
+]
+
+[project.optional-dependencies]
+cuda = [
+    "nvidia-cublas-cu12; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "nvidia-cudnn-cu12>=9,<10; sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
 
 [dependency-groups]

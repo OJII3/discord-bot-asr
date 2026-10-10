@@ -19,6 +19,12 @@
             pkgs.python312
             pkgs.uv
           ];
+
+          shellHook = pkgs.lib.optionalString pkgs.stdenv.isLinux ''
+            if [ "$(uname -m)" = "x86_64" ]; then
+              export LD_LIBRARY_PATH="$PWD/.venv/lib/python3.12/site-packages/nvidia/cublas/lib:$PWD/.venv/lib/python3.12/site-packages/nvidia/cudnn/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            fi
+          '';
         };
       };
     };
