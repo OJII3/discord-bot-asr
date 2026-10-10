@@ -33,6 +33,18 @@ ASR_DEVICE=cpu uv run asr-server
 
 各要求の音声は最大30秒です。サーバーは `requestId` ごとに完了または失敗を返し、応答待ちの間に次の音声をアップロードできます。
 
+## Parakeet サーバー
+
+既存 faster-whisper サーバーと同じ `/v1/asr` WebSocket プロトコルを使う Parakeet サーバーも起動できます。NVIDIA NeMo の `parakeet-tdt-0.6b-v3` を使用します。Parakeet v3 は英語を含む欧州25言語に対応しますが、日本語には対応していません。Klein の `language` を対応言語（例: `en`）にして試してください。
+
+```sh
+nix develop
+uv sync --extra parakeet
+uv run parakeet-asr-server
+```
+
+NeMo/PyTorch のインストールは faster-whisper 用 `cuda` extra と別です。GPU 推論には CUDA 対応 PyTorch 環境が必要です。`ASR_DEVICE=cpu` または `ASR_DEVICE=cuda` でデバイスを指定でき、既定の `auto` は CUDA が利用可能なら GPU を選びます。Parakeet サーバーは既定で `ws://localhost:8000/v1/asr` を listen するため、faster-whisper サーバーと同時には同じポートで起動できません。
+
 ユーザー systemd で常時起動・異常終了後の再起動を行う場合は、[`deploy/systemd/faster-whisper-asr.service.example`](deploy/systemd/faster-whisper-asr.service.example) を `~/.config/systemd/user/faster-whisper-asr.service` にコピーし、`/path/to/...` を実際のパスに置き換えてください。
 
 ```sh
