@@ -15,6 +15,9 @@ cuda = [
     "nvidia-cublas-cu12; sys_platform == 'linux' and platform_machine == 'x86_64'",
     "nvidia-cudnn-cu12>=9,<10; sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
+parakeet = [
+    "nemo_toolkit[asr]>=2.4.0,<3",
+]
 
 [dependency-groups]
 dev = [
@@ -24,10 +27,11 @@ dev = [
 
 [project.scripts]
 asr-server = "asr_server:main"
+parakeet-asr-server = "parakeet_asr_server:main"
 
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["asr_server"]
+py-modules = ["asr_server", "parakeet_asr_server"]
