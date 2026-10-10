@@ -1,17 +1,17 @@
 [project]
 name = "discord-bot-asr"
 version = "0.1.0"
-description = "Qwen3 ASR WebSocket server for Klein voice chat"
+description = "Faster-whisper ASR WebSocket server for Klein voice chat"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi>=0.115",
     "numpy>=2.0",
-    "qwen-asr[vllm]>=0.0.6",
+    "faster-whisper>=1.1.0",
     "uvicorn>=0.34",
 ]
 
 [project.scripts]
-qwen3-asr-server = "asr_server:main"
+asr-server = "asr_server:main"
 
 [build-system]
 requires = ["setuptools>=68"]
