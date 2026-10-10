@@ -1,0 +1,16 @@
+[Unit]
+Description=Faster Whisper ASR WebSocket server
+After=default.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/discord-bot-asr
+Environment=ASR_MODEL=large-v3-turbo
+ExecStart=/path/to/nix develop /path/to/discord-bot-asr --command uv run --project /path/to/discord-bot-asr asr-server
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
