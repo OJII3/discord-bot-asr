@@ -7,7 +7,7 @@ dependencies = [
     "fastapi>=0.115",
     "numpy>=2.0",
     "faster-whisper>=1.1.0",
-    "uvicorn>=0.34",
+    "uvicorn[standard]>=0.34",
 ]
 
 [project.optional-dependencies]
