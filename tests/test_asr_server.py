@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-import asr_server
+from discord_bot_asr import asr_server
 
 
 class FakeWhisperModel:

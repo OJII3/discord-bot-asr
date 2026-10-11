@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-import parakeet_asr_server
+from discord_bot_asr import parakeet_asr_server
 
 
 class FakeParakeetModel:
