@@ -9,15 +9,17 @@ Linux 環境で動作します。Nix の開発シェルに含まれる Python 3.
 ```sh
 nix develop
 uv sync --extra cuda
-uv run asr-server
+uv run python -m discord_bot_asr
 ```
+
+`uv run asr-server` でも同じ faster-whisper サーバーを起動できます。
 
 NVIDIA GPU を使う場合、`cuda` extra が CUDA 12 用 cuBLAS と cuDNN 9 をインストールし、Nix 開発シェルがそれらのライブラリをロード対象にします。初回起動時に Hugging Face からモデルをダウンロードします。既定の接続先は `ws://localhost:8000/v1/asr` です。TLS 終端を設ける場合は `wss://` を使用してください。
 
 GPU ライブラリを入れず CPU で実行する場合は `uv sync` の後、次のように起動します。
 
 ```sh
-ASR_DEVICE=cpu uv run asr-server
+ASR_DEVICE=cpu uv run python -m discord_bot_asr
 ```
 
 ## 設定
@@ -40,8 +42,10 @@ ASR_DEVICE=cpu uv run asr-server
 ```sh
 nix develop
 uv sync --extra parakeet
-uv run parakeet-asr-server
+uv run python -m discord_bot_asr.parakeet_asr_server
 ```
+
+`uv run parakeet-asr-server` でも起動できます。
 
 NeMo/PyTorch のインストールは faster-whisper 用 `cuda` extra と別です。GPU 推論には CUDA 対応 PyTorch 環境が必要です。`ASR_DEVICE=cpu` または `ASR_DEVICE=cuda` でデバイスを指定でき、既定の `auto` は CUDA が利用可能なら GPU を選びます。Parakeet サーバーは既定で `ws://localhost:8000/v1/asr` を listen するため、faster-whisper サーバーと同時には同じポートで起動できません。
 
