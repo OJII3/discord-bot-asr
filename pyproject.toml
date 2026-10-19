@@ -1,22 +1,13 @@
 [project]
 name = "discord-bot-asr"
 version = "0.1.0"
-description = "Faster-whisper ASR WebSocket server for Klein voice chat"
+description = "Parakeet ASR WebSocket server for Klein voice chat"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi>=0.115",
     "numpy>=2.0",
-    "faster-whisper>=1.1.0",
-    "uvicorn[standard]>=0.34",
-]
-
-[project.optional-dependencies]
-cuda = [
-    "nvidia-cublas-cu12; sys_platform == 'linux' and platform_machine == 'x86_64'",
-    "nvidia-cudnn-cu12>=9,<10; sys_platform == 'linux' and platform_machine == 'x86_64'",
-]
-parakeet = [
     "nemo_toolkit[asr]>=2.4.0,<3",
+    "uvicorn[standard]>=0.34",
 ]
 
 [dependency-groups]
@@ -26,7 +17,7 @@ dev = [
 ]
 
 [project.scripts]
-asr-server = "discord_bot_asr.asr_server:main"
+asr-server = "discord_bot_asr.parakeet_asr_server:main"
 parakeet-asr-server = "discord_bot_asr.parakeet_asr_server:main"
 
 [build-system]

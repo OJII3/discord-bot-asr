@@ -1,22 +1,20 @@
 # Discord bot ASR server
 
-Klein の voice chat 機能向けに、faster-whisper の WebSocket ASR サーバーを提供します。既定で `large-v3-turbo` を実行し、`/v1/asr` で 16 kHz・モノラル・signed 16-bit PCM を受け付けます。
+Klein の voice chat 機能向けに、日本語対応の Parakeet WebSocket ASR サーバーを提供します。NVIDIA NeMo の [`parakeet-tdt_ctc-0.6b-ja`](https://huggingface.co/nvidia/parakeet-tdt_ctc-0.6b-ja) を使い、`/v1/asr` で 16 kHz・モノラル・signed 16-bit PCM を受け付けます。モデルは CC BY 4.0 で公開されており、初回起動時に Hugging Face からダウンロードされます。
 
 ## 起動
 
-Linux 環境で動作します。Nix の開発シェルに含まれる Python 3.12 と C コンパイラを使って、リポジトリのルートで起動します。NVIDIA GPU がある場合は自動で利用します。
+Linux 環境で動作します。Nix の開発シェルに含まれる Python 3.12 を使って、リポジトリのルートで起動します。
 
 ```sh
 nix develop
-uv sync --extra cuda
+uv sync
 uv run python -m discord_bot_asr
 ```
 
-`uv run asr-server` でも同じ faster-whisper サーバーを起動できます。
+`uv run asr-server` または `uv run parakeet-asr-server` でも起動できます。既定の接続先は `ws://localhost:8000/v1/asr` です。TLS 終端を設ける場合は `wss://` を使用してください。
 
-NVIDIA GPU を使う場合、`cuda` extra が CUDA 12 用 cuBLAS と cuDNN 9 をインストールし、Nix 開発シェルがそれらのライブラリをロード対象にします。初回起動時に Hugging Face からモデルをダウンロードします。既定の接続先は `ws://localhost:8000/v1/asr` です。TLS 終端を設ける場合は `wss://` を使用してください。
-
-GPU ライブラリを入れず CPU で実行する場合は `uv sync` の後、次のように起動します。
+NVIDIA GPU が利用できる場合、既定の `ASR_DEVICE=auto` は GPU を選びます。CPU で実行する場合は次のようにします。
 
 ```sh
 ASR_DEVICE=cpu uv run python -m discord_bot_asr
@@ -26,35 +24,19 @@ ASR_DEVICE=cpu uv run python -m discord_bot_asr
 
 | 環境変数 | 既定値 | 説明 |
 | --- | --- | --- |
-| `ASR_MODEL` | `large-v3-turbo` | faster-whisper モデル名またはローカルパス |
-| `ASR_DEVICE` | `auto` | faster-whisper の実行デバイス |
-| `ASR_COMPUTE_TYPE` | `default` | CTranslate2 の計算型 |
+| `ASR_DEVICE` | `auto` | 推論デバイス。`auto`、`cpu`、`cuda` を指定できます |
 | `HOST` | `0.0.0.0` | bind するアドレス |
 | `PORT` | `8000` | listen するポート |
 | `LOG_LEVEL` | `INFO` | ログレベル |
 
 各要求の音声は最大30秒です。サーバーは `requestId` ごとに完了または失敗を返し、応答待ちの間に次の音声をアップロードできます。
 
-## Parakeet サーバー
-
-既存 faster-whisper サーバーと同じ `/v1/asr` WebSocket プロトコルを使う Parakeet サーバーも起動できます。NVIDIA NeMo の [`parakeet-tdt_ctc-0.6b-ja`](https://huggingface.co/nvidia/parakeet-tdt_ctc-0.6b-ja) を使用し、日本語の音声を認識します。モデルは CC BY 4.0 で公開されています。
-
-```sh
-nix develop
-uv sync --extra parakeet
-uv run python -m discord_bot_asr.parakeet_asr_server
-```
-
-`uv run parakeet-asr-server` でも起動できます。
-
-NeMo/PyTorch のインストールは faster-whisper 用 `cuda` extra と別です。GPU 推論には CUDA 対応 PyTorch 環境が必要です。`ASR_DEVICE=cpu` または `ASR_DEVICE=cuda` でデバイスを指定でき、既定の `auto` は CUDA が利用可能なら GPU を選びます。Parakeet サーバーは既定で `ws://localhost:8000/v1/asr` を listen するため、faster-whisper サーバーと同時には同じポートで起動できません。
-
-ユーザー systemd で常時起動・異常終了後の再起動を行う場合は、[`deploy/systemd/faster-whisper-asr.service.example`](deploy/systemd/faster-whisper-asr.service.example) を `~/.config/systemd/user/faster-whisper-asr.service` にコピーし、`/path/to/...` を実際のパスに置き換えてください。
+ユーザー systemd で常時起動・異常終了後の再起動を行う場合は、[`deploy/systemd/parakeet-asr.service.example`](deploy/systemd/parakeet-asr.service.example) を `~/.config/systemd/user/parakeet-asr.service` にコピーし、`/path/to/...` を実際のパスに置き換えてください。
 
 ```sh
 systemctl --user daemon-reload
-systemctl --user enable --now faster-whisper-asr.service
-systemctl --user status faster-whisper-asr.service
+systemctl --user enable --now parakeet-asr.service
+systemctl --user status parakeet-asr.service
 ```
 
 ログアウト中も動かすには、ユーザーの linger を有効にしてください。Klein 側では voice chat を有効にし、`asrServerUrl` にサーバーの WebSocket URL を設定してください。プロトコルの詳細は [Voice chat ASR streaming protocol](https://github.com/OJII3/klein/blob/main/docs%2Fvoice-chat-asr-protocol.md) を参照してください。
